@@ -1,154 +1,184 @@
-📘 README — HW1: Text Cleaning & N-Gram Analysis
-Natural Language Processing Course — Homework 1 (Metin Temizleme & N-Gram Analizi)
+# N-gram Analysis of Text Data
+
+## Project Description
+
+This project demonstrates text analysis using N-grams (unigrams, bigrams, trigrams) with an example text describing the nature of Kyrgyzstan. It includes text preprocessing, N-gram extraction, and visualization of results.
+
+## Features
+
+- 📝 Text preprocessing (cleaning, tokenization, lemmatization)
+- 🔍 Extraction of unigrams, bigrams, and trigrams
+- 📊 Visualization of top-10 most frequent N-grams
+- 🎨 Stylish plots with dark theme design
+
+## Requirements
+
+```bash
+pip install pandas numpy nltk matplotlib
+```
 
-Student: Chyngyz Almambetov
-Submission File: hw1.ipynb
-Deadline: November 28, 2025
-Score Weight: Accuracy (60%) + Reporting (40%)
+## Installation
 
-📌 1. Overview
+1. Clone the repository or copy the code
+2. Install required libraries:
 
-This homework focuses on fundamental Natural Language Processing (NLP) preprocessing steps, including:
+```python
+import pandas as pd
+import numpy as np
+import re
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
+from collections import Counter
+import matplotlib.pyplot as plt
+```
 
-Text cleaning
+3. Download NLTK resources:
+
+```python
+nltk.download('punkt')
+nltk.download('punkt_tab')
+nltk.download('stopwords')
+nltk.download('wordnet')
+```
 
-Tokenization
+## Usage
 
-Stopword removal
+### 1. Load Text
 
-Lemmatization
+Prepare your text for analysis and split it into sentences:
 
-N-gram generation (Unigram, Bigram, Trigram)
+```python
+text = """
+Your text here...
+"""
 
-Frequency analysis
+sentences = text.split(".")
+df = pd.DataFrame(sentences, columns=["text"])
+df = df[df["text"].str.strip() != ""]
+```
 
-Visualization of most common n-grams
+### 2. Text Preprocessing
 
-All steps are implemented inside the Jupyter notebook hw1.ipynb using Python and NLTK.
+The `clean_text()` function performs:
+- ✔ Lowercasing
+- ✔ Removing punctuation
+- ✔ Removing numbers
+- ✔ Tokenization
+- ✔ Stopword removal
+- ✔ Lemmatization
 
-📚 2. Dataset
+```python
+lemmatizer = WordNetLemmatizer()
+stop_words = set(stopwords.words("english"))
 
-For this assignment, a custom English dataset was created describing the natural landscapes of Kyrgyzstan.
-The text includes mountains, lakes, forests, wildlife, nomadic culture, and ecosystems — providing rich vocabulary for n-gram analysis.
+def clean_text(text):
+    text = text.lower()
+    text = re.sub(r'[^\w\s]', '', text)
+    text = re.sub(r'\d+', '', text)
+    
+    tokens = word_tokenize(text)
+    tokens = [w for w in tokens if w not in stop_words]
+    tokens = [lemmatizer.lemmatize(w) for w in tokens]
+    
+    return tokens
 
-🧹 3. Text Preprocessing Steps
+df["clean_tokens"] = df["text"].apply(clean_text)
+```
 
-The following preprocessing operations were applied:
+### 3. Generate N-grams
 
-✔ Lowercasing
+```python
+def get_ngrams(tokens_list, n):
+    ngrams = []
+    for tokens in tokens_list:
+        for i in range(len(tokens)-n+1):
+            ngrams.append(tuple(tokens[i:i+n]))
+    return ngrams
 
-Convert all text to lowercase to ensure consistency.
+unigrams = get_ngrams(df["clean_tokens"], 1)
+bigrams  = get_ngrams(df["clean_tokens"], 2)
+trigrams = get_ngrams(df["clean_tokens"], 3)
+```
 
-✔ Removing Punctuation
+### 4. Analyze Results
 
-All non-alphabetical characters were removed using regex.
+Display the top-10 most frequent N-grams:
 
-✔ Removing Digits
+```python
+print("Top Unigrams:", Counter(unigrams).most_common(10))
+print("Top Bigrams:", Counter(bigrams).most_common(10))
+print("Top Trigrams:", Counter(trigrams).most_common(10))
+```
 
-Numbers were removed to focus purely on lexical patterns.
+### 5. Visualization
 
-✔ Tokenization
+Create plots to visualize the results:
 
-The text was split into individual words using NLTK’s word_tokenize.
+```python
+plt.style.use("dark_background")
 
-✔ Stopword Removal
+# Unigrams
+uni_counts = Counter(unigrams).most_common(10)
+labels = [' '.join(u[0]) for u in uni_counts]
+values = [u[1] for u in uni_counts]
 
-English stopwords (e.g., the, is, and, from) were removed to emphasize meaningful content.
+plt.figure(figsize=(12, 6))
+colors = cm.cool(np.linspace(0.3, 1, len(values)))
 
-✔ Lemmatization
+plt.barh(labels, values, color=colors, edgecolor='#ffffff', linewidth=1.2)
+plt.xlabel("Frequency", fontsize=13, color="white")
+plt.title("Top 10 Unigrams", fontsize=18, weight="bold", color="white")
+plt.grid(axis='x', linestyle='--', alpha=0.3)
 
-Words were reduced to their base form using WordNetLemmatizer.
-Example: mountains → mountain, lakes → lake
+plt.gca().invert_yaxis()
+plt.show()
+```
 
-This ensures better grouping during n-gram frequency analysis.
+## Project Structure
 
-🔠 4. N-Gram Analysis
+```
+├── ngram_analysis.py       # Main script
+├── README.md              # This file
+└── requirements.txt       # Dependencies
+```
 
-N-grams represent sequences of words:
+## Example Results
 
-Unigram: 1-word sequence
+After running the script, you will get:
 
-Bigram: 2-word sequence
+1. **Top Unigrams** - most frequent individual words
+2. **Top Bigrams** - most frequent word pairs
+3. **Top Trigrams** - most frequent word triplets
+4. **Three plots** visualizing N-gram frequencies
 
-Trigram: 3-word sequence
+## Customization
 
-Functions were written to automatically extract all possible n-grams from the cleaned tokens.
+You can customize:
 
-📊 5. Frequency Analysis
+- **Number of N-grams**: change the parameter in `most_common(10)`
+- **Color scheme**: use different palettes (`cm.cool`, `cm.viridis`, `cm.plasma`)
+- **Plot size**: modify `figsize=(12, 6)`
+- **Stopwords language**: replace `"english"` with another language
 
-The top 10 most common n-grams were computed using Python's Counter:
+## Sample Text
 
-Top Unigrams: shows dominant keywords
+The project uses text about the nature of Kyrgyzstan, including descriptions of:
+- Mountain landscapes
+- Issyk-Kul Lake
+- Alpine meadows and pastures
+- Ecosystem diversity
+- Wildlife and nature reserves
 
-Top Bigrams: reveals common word associations
+## Author
 
-Top Trigrams: captures longer semantic structures
+Created for demonstration of text analysis using N-gram methods.
 
-Example significant n-grams:
+## License
 
-Unigrams: kyrgyzstan, mountain, lake, nature, ecosystem
+Free to use for educational purposes.
 
-Bigrams: snow capped, natural landscape, mountain ranges
+---
 
-Trigrams: one largest deepest, mountain pasture known
-
-(Exact values depend on the final text.)
-
-🎨 6. Visualizations
-
-To clearly present frequency results, the notebook includes:
-
-✔ Horizontal bar charts (Top 10)
-
-For:
-
-Unigrams
-
-Bigrams
-
-Trigrams
-
-✔ Custom styling
-
-Dark mode theme
-
-Gradient color palettes
-
-Clear labels
-
-Grid lines for readability
-
-This ensures professional and visually appealing output.
-
-🧪 7. Technologies Used
-
-Python 3
-
-NLTK
-
-Pandas
-
-Matplotlib
-
-NumPy
-
-Jupyter / Google Colab
-
-🧾 8. File Structure
-HW1/
-│── hw1.ipynb          # Main notebook with implementation
-│── README.md          # Documentation (this file)
-└── assets/            # (Optional) screenshots or exported plots
-
-✅ 9. Conclusion
-
-This homework demonstrates the essential NLP preprocessing pipeline.
-By applying lemmatization, tokenization, stopword removal, and n-gram extraction, the text becomes structured and ready for computational linguistic analysis.
-
-The visualizations and frequency statistics provide insights into the lexical patterns of the dataset, making this assignment a strong foundation for more advanced NLP tasks such as sentiment analysis, topic modeling, or transformer-based analysis.
-
-🙋‍♂️ 10. Author
-
-Chyngyz Almambetov
-Software Engineering Student
-Kyrgyz-Turkish Manas University
+**Note**: Make sure all NLTK resources are downloaded before running the script.
